@@ -7,10 +7,10 @@ import (
 )
 
 type GetClientsController struct {
-    UseCase *applications.GetClientsUseCase
+    UseCase *applications.GetClient
 }
 
-func NewGetClientsController(useCase *applications.GetClientsUseCase) *GetClientsController {
+func NewGetClientsController(useCase *applications.GetClient) *GetClientsController {
     return &GetClientsController{UseCase: useCase}
 }
 

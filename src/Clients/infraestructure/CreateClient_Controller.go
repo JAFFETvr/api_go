@@ -8,10 +8,10 @@ import (
 )
 
 type CreateClientController struct {
-    UseCase *applications.CreateClientUseCase
+    UseCase *applications.CreateClient
 }
 
-func NewCreateClientController(useCase *applications.CreateClientUseCase) *CreateClientController {
+func NewCreateClientController(useCase *applications.CreateClient) *CreateClientController {
     return &CreateClientController{UseCase: useCase}
 }
 

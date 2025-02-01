@@ -1,19 +1,22 @@
 package applications
 
-
 import (
+    "demo/src/Clients/infraestructure/repositories"
     "demo/src/Clients/domain/entities"
-	"demo/src/Clients/domain"
 )
 
-type CreateClientUseCase struct {
-    ClientRepo domain.ClientRepository
+type CreateClient struct {
+    db repositories.ClientRepository
 }
 
-func NewCreateClientUseCase(repo domain.ClientRepository) *CreateClientUseCase {
-    return &CreateClientUseCase{ClientRepo: repo}
+func NewCreateClient(db repositories.ClientRepository) *CreateClient {
+    return &CreateClient{db: db}
 }
 
-func (uc *CreateClientUseCase) Execute(client *entities.Client) error {
-    return uc.ClientRepo.Create(client)
+func (cc *CreateClient) Execute(client *entities.Client) error {
+    err := cc.db.Save(client)
+    if err != nil {
+        return err
+    }
+    return nil
 }

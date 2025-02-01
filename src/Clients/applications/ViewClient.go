@@ -1,18 +1,22 @@
 package applications
 
 import (
+    "demo/src/Clients/infraestructure/repositories"
     "demo/src/Clients/domain/entities"
-	"demo/src/Clients/domain"
 )
 
-type GetClientsUseCase struct {
-    ClientRepo domain.ClientRepository
+type GetClient struct {
+    db repositories.ClientRepository
 }
 
-func NewGetClientsUseCase(repo domain.ClientRepository) *GetClientsUseCase {
-    return &GetClientsUseCase{ClientRepo: repo}
+func NewGetClient(db repositories.ClientRepository) *GetClient {
+    return &GetClient{db: db}
 }
 
-func (uc *GetClientsUseCase) Execute() ([]entities.Client, error) {
-    return uc.ClientRepo.GetAll()
+func (gc *GetClient) Execute() ([]entities.Client, error) {
+    clients, err := gc.db.GetAll()
+    if err != nil {
+        return nil, err
+    }
+    return clients, nil
 }
