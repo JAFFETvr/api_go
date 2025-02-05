@@ -18,18 +18,22 @@ func main() {
 	mysql := infraestructure.NewMySQL()
 	defer mysql.Close()
 
+	// Productos
 	productRepo := repositories.NewProductRepository(mysql.DB)
 
 	createProduct := application.NewCreateProduct(*productRepo)
 	getProducts := application.NewGetProducts(*productRepo)
+	getProductById := application.NewGetProductById(*productRepo) //
 	updateProduct := application.NewUpdateProduct(*productRepo)
 	deleteProduct := application.NewDeleteProduct(*productRepo)
 
 	createProductController := infraestructure.NewCreateProductController(createProduct)
 	getProductsController := infraestructure.NewGetProductsController(getProducts)
+	getProductByIdController := infraestructure.NewGetProductByIdController(getProductById) 
 	updateProductController := infraestructure.NewUpdateProductController(updateProduct)
 	deleteProductController := infraestructure.NewDeleteProductController(deleteProduct)
 
+	// Clientes
 	clientRepo := clients_repositories.NewClientRepository(mysql.DB)
 
 	createClient := clients_application.NewCreateClient(clientRepo)
@@ -44,11 +48,23 @@ func main() {
 
 	router := gin.Default()
 
-	productRoutes := infraestructure.NewProductRoutes(createProductController, getProductsController, updateProductController, deleteProductController)
+	productRoutes := infraestructure.NewProductRoutes(
+		createProductController,
+		getProductsController,
+		updateProductController,
+		deleteProductController,
+		getProductByIdController, 
+	)
 	productRoutes.SetupRoutes(router)
 
-	clientsRoutes := clients_infraestructure.NewClientRoutes(createClientController, getClientsController, updateClientController, deleteClientController)
-    clientsRoutes.SetupRoutes(router)
+	// Rutas de clientes
+	clientsRoutes := clients_infraestructure.NewClientRoutes(
+		createClientController,
+		getClientsController,
+		updateClientController,
+		deleteClientController,
+	)
+	clientsRoutes.SetupRoutes(router)
 
 	// Iniciar el servidor
 	log.Println("[Main] Servidor corriendo en http://localhost:8080")

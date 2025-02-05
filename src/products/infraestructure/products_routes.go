@@ -5,23 +5,26 @@ import (
 )
 
 type ProductRoutes struct {
-	CreateProductController *CreateProductController
-	GetProductsController   *GetProductsController
-	UpdateProductController *UpdateProductController
-	DeleteProductController *DeleteProductController 
+	CreateProductController  *CreateProductController
+	GetProductsController    *GetProductsController
+	UpdateProductController  *UpdateProductController
+	DeleteProductController  *DeleteProductController
+	GetProductByIdController *GetProductByIdController 
 }
 
 func NewProductRoutes(
-	cpc *CreateProductController, 
-	gpc *GetProductsController, 
-	upc *UpdateProductController, 
-	dpc *DeleteProductController, 
+	cpc *CreateProductController,
+	gpc *GetProductsController,
+	upc *UpdateProductController,
+	dpc *DeleteProductController,
+	gpbc *GetProductByIdController, 
 ) *ProductRoutes {
 	return &ProductRoutes{
-		CreateProductController: cpc,
-		GetProductsController:   gpc,
-		UpdateProductController: upc,
-		DeleteProductController: dpc,
+		CreateProductController:  cpc,
+		GetProductsController:    gpc,
+		UpdateProductController:  upc,
+		DeleteProductController:  dpc,
+		GetProductByIdController: gpbc, 
 	}
 }
 
@@ -34,11 +37,15 @@ func (pr *ProductRoutes) SetupRoutes(router *gin.Engine) {
 		pr.GetProductsController.Execute(c)
 	})
 
+	router.GET("/products/:id", func(c *gin.Context) { 
+		pr.GetProductByIdController.Execute(c)//
+	})
+
 	router.PUT("/products/:id", func(c *gin.Context) {
 		pr.UpdateProductController.Execute(c)
 	})
 
-	router.DELETE("/products/:id", func(c *gin.Context) { 
+	router.DELETE("/products/:id", func(c *gin.Context) {
 		pr.DeleteProductController.Execute(c)
 	})
 }
