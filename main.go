@@ -1,41 +1,64 @@
 package main
 
 import (
+	"log"
+
 	"demo/src/products/application"
 	"demo/src/products/infraestructure"
 	"demo/src/products/infraestructure/repositories"
 
+	clients_application "demo/src/Clients/applications"
 	clients_infraestructure "demo/src/Clients/infraestructure"
-	clients_repositories "demo/src/Clients/infraestructure/repositories" // Alias para evitar conflicto de nombres
-	clients_application "demo/src/Clients/applications" // Alias para evitar conflicto de nombres
+	clients_repositories "demo/src/Clients/infraestructure/repositories"
 
-	"log"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	router := gin.Default()
+
+	// Middleware para depuración (Verifica si las solicitudes llegan correctamente)
+	router.Use(func(c *gin.Context) {
+		log.Println("[Middleware] Solicitud recibida:", c.Request.Method, c.Request.URL.Path)
+		c.Next()
+	})
+
+	// Configuración de CORS
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:4200"}, // Frontend
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true, // Necesario para autenticación con cookies o tokens
+	}))
+
+	// Manejo de preflight requests explícitamente
+	router.OPTIONS("/*any", func(c *gin.Context) {
+		log.Println("Preflight request:", c.Request.Method, c.Request.URL.Path) // Log para ver si se ejecuta
+		c.Header("Access-Control-Allow-Origin", "http://localhost:4200")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Status(200) // Código 200 para la solicitud OPTIONS
+	})
 	mysql := infraestructure.NewMySQL()
 	defer mysql.Close()
 
-	// Productos
 	productRepo := repositories.NewProductRepository(mysql.DB)
-
 	createProduct := application.NewCreateProduct(*productRepo)
 	getProducts := application.NewGetProducts(*productRepo)
-	getProductById := application.NewGetProductById(*productRepo) //
+	getProductById := application.NewGetProductById(*productRepo)
 	updateProduct := application.NewUpdateProduct(*productRepo)
 	deleteProduct := application.NewDeleteProduct(*productRepo)
 
 	createProductController := infraestructure.NewCreateProductController(createProduct)
 	getProductsController := infraestructure.NewGetProductsController(getProducts)
-	getProductByIdController := infraestructure.NewGetProductByIdController(getProductById) 
+	getProductByIdController := infraestructure.NewGetProductByIdController(getProductById)
 	updateProductController := infraestructure.NewUpdateProductController(updateProduct)
 	deleteProductController := infraestructure.NewDeleteProductController(deleteProduct)
 
-	// Clientes
 	clientRepo := clients_repositories.NewClientRepository(mysql.DB)
-
 	createClient := clients_application.NewCreateClient(clientRepo)
 	getClients := clients_application.NewGetClient(clientRepo)
 	updateClient := clients_application.NewUpdateClient(clientRepo)
@@ -46,18 +69,20 @@ func main() {
 	updateClientController := clients_infraestructure.NewUpdateClientController(updateClient)
 	deleteClientController := clients_infraestructure.NewDeleteClientController(deleteClient)
 
-	router := gin.Default()
+	// Configurar el enrutador de Gin
 
+
+	// Configuración de rutas para productos
 	productRoutes := infraestructure.NewProductRoutes(
 		createProductController,
 		getProductsController,
 		updateProductController,
 		deleteProductController,
-		getProductByIdController, 
+		getProductByIdController,
 	)
 	productRoutes.SetupRoutes(router)
 
-	// Rutas de clientes
+	// Configuración de rutas para clientes
 	clientsRoutes := clients_infraestructure.NewClientRoutes(
 		createClientController,
 		getClientsController,
